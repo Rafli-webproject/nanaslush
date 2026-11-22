@@ -10,7 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  
+
+  # ... (library lain)
+  fl_chart: ^0.66.0  
   # Library untuk HTTP Request ke API
   dio: ^5.4.0
   # State Management

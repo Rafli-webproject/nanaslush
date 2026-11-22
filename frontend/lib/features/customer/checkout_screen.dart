@@ -55,7 +55,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
         setState(() => _isLoading = false);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pesanan berhasil dibuat!'), backgroundColor: Colors.green));
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pesanan berhasil dibuat! Menunggu verifikasi Admin.'), backgroundColor: Colors.green));
           Navigator.pop(context); // Kembali ke Home
         }
       } catch (e) {
@@ -102,13 +102,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Form Jumlah
+              
+              // Form Jumlah & Catatan
               TextFormField(
                 controller: _quantityController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Jumlah Pesanan', prefixIcon: Icon(Icons.numbers)),
-                onChanged: (value) => setState(() {}), // Update total harga otomatis
+                onChanged: (value) => setState(() {}),
                 validator: (value) {
                   final qty = int.tryParse(value ?? '');
                   if (qty == null || qty <= 0) return 'Jumlah harus valid';
@@ -116,14 +116,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // Form Catatan
               TextFormField(
                 controller: _notesController,
                 decoration: const InputDecoration(labelText: 'Catatan (Opsional)', prefixIcon: Icon(Icons.notes)),
               ),
               const SizedBox(height: 24),
-
+              
               // Total Harga
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -134,8 +132,40 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
               const Divider(height: 32),
 
+              // --- INSTRUKSI PEMBAYARAN (FITUR BARU) ---
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.5)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text('Instruksi Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text('Silakan transfer sesuai total harga ke:'),
+                    const SizedBox(height: 4),
+                    Text(
+                      'BCA: 123-456-7890\na.n Nana Slush UMKM', 
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade800)
+                    ),
+                    const SizedBox(height: 8),
+                    const Text('Atau scan QRIS di kasir. Setelah transfer, harap unggah bukti di bawah ini.', style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Upload Bukti Pembayaran
-              const Text('Bukti Pembayaran', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Unggah Bukti Pembayaran', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: _pickImage,

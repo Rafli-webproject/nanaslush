@@ -7,13 +7,15 @@ import { uploadToCloudinary } from '../utils/uploadImage';
 import { formatZodError } from '../utils/validation';
 
 const orderSchema = z.object({
-  productId: z.string().regex(/^\d+$/, 'Product ID harus berupa angka'),
-  quantity: z.string().regex(/^\d+$/, 'Quantity harus berupa angka'),
+  productId: z.string().regex(/^\d+$/),
+  quantity: z.string().regex(/^\d+$/),
   notes: z.string().optional(),
+  voucherCode: z.string().optional(),
+  discountAmount: z.string().optional(),
 });
 
 const statusSchema = z.object({
-  status: z.enum(['pending', 'processed', 'completed', 'cancelled']),
+  status: z.enum(['pending', 'processed', 'delivering', 'completed', 'cancelled']),
 });
 
 export const createOrder = async (req: Request, res: Response): Promise<void> => {
@@ -28,6 +30,13 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
     }
 
     const quantity = parseInt(validatedData.quantity);
+    const currentStock = product[0].stock;
+
+    if (currentStock < quantity) {
+      res.status(400).json({ success: false, message: `Stok tidak mencukupi. Sisa stok: ${currentStock}` });
+      return;
+    }
+
     const totalPrice = (parseFloat(product[0].price) * quantity).toString();
 
     let paymentProofUrl = null;
@@ -42,7 +51,14 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
       totalPrice: totalPrice,
       notes: validatedData.notes,
       paymentProofUrl: paymentProofUrl,
+      voucherCode: validatedData.voucherCode || null,
+      discountAmount: validatedData.discountAmount || '0',
     });
+
+    // Potong Stok Otomatis
+    await db.update(products)
+      .set({ stock: currentStock - quantity })
+      .where(eq(products.id, parseInt(validatedData.productId)));
 
     res.status(201).json({ success: true, message: 'Pesanan berhasil dibuat', data: { id: newOrder[0].insertId } });
   } catch (error: any) {
@@ -54,11 +70,9 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-// GET ORDERS DENGAN JOIN TABLE (Untuk Admin)
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
   try {
     if (req.user!.role === 'admin') {
-      // Admin melihat semua pesanan beserta nama customer dan nama produk
       const orderList = await db.select({
         id: orders.id,
         quantity: orders.quantity,
@@ -76,7 +90,6 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
 
       res.status(200).json({ success: true, message: 'Daftar pesanan berhasil diambil', data: orderList });
     } else {
-      // Customer hanya melihat miliknya
       const orderList = await db.select().from(orders).where(eq(orders.userId, req.user!.id));
       res.status(200).json({ success: true, message: 'Daftar pesanan berhasil diambil', data: orderList });
     }

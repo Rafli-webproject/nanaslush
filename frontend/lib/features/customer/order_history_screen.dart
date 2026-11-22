@@ -42,15 +42,19 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   }
 
   String _formatDate(String dateString) {
-    final date = DateTime.parse(dateString).toLocal();
-    return DateFormat('dd MMM yyyy, HH:mm').format(date);
+    try {
+      final date = DateTime.parse(dateString).toLocal();
+      return DateFormat('dd MMM yyyy, HH:mm').format(date);
+    } catch (e) {
+      return dateString;
+    }
   }
 
-  // Warna Badge berdasarkan Status
   Color _getStatusColor(String status) {
     switch (status) {
       case 'pending': return Colors.orange;
       case 'processed': return Colors.blue;
+      case 'delivering': return Colors.purple;
       case 'completed': return Colors.green;
       case 'cancelled': return Colors.red;
       default: return Colors.grey;
@@ -64,16 +68,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-                      const SizedBox(height: 16),
-                      ElevatedButton(onPressed: _fetchOrders, child: const Text('Coba Lagi'))
-                    ],
-                  ),
-                )
+              ? Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)))
               : _orders.isEmpty
                   ? const Center(child: Text('Belum ada pesanan.'))
                   : ListView.builder(
@@ -93,10 +88,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      'Pesanan #${order['id']}',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                    ),
+                                    Text('Pesanan #${order['id']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                       decoration: BoxDecoration(
@@ -112,18 +104,17 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 8),
-                                Text(_formatDate(order['createdAt']), style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                Text(_formatDate(order['createdAt'].toString()), style: const TextStyle(color: Colors.grey, fontSize: 12)),
                                 const Divider(height: 24),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text('Produk ID: ${order['productId']} | Qty: ${order['quantity']}'),
-                                    Text(
-                                      _formatPrice(order['totalPrice']),
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
-                                    ),
+                                    Text(_formatPrice(order['totalPrice']), style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
                                   ],
                                 ),
+                                if (order['voucherCode'] != null) 
+                                  Text('Voucher: ${order['voucherCode']} (Potongan: ${_formatPrice(order['discountAmount'])})', style: const TextStyle(color: Colors.green, fontSize: 12)),
                                 if (order['notes'] != null && order['notes'].toString().isNotEmpty) ...[
                                   const SizedBox(height: 8),
                                   Text('Catatan: ${order['notes']}', style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 12)),

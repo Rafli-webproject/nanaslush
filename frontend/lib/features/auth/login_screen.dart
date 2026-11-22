@@ -30,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Login Berhasil!'), backgroundColor: Colors.green));
           
-          // Fallback navigasi eksplisit berdasarkan role
+          // PAKSA PINDAH HALAMAN BERDASARKAN ROLE
           if (authProvider.role == 'admin') {
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminDashboard()));
           } else {

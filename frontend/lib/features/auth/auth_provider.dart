@@ -15,6 +15,7 @@ class AuthProvider with ChangeNotifier {
 
   final ApiService _apiService = ApiService();
 
+  // Memuat token saat aplikasi pertama kali dibuka
   Future<void> loadToken() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('token');
@@ -23,6 +24,7 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Proses Login
   Future<String?> login(String email, String password) async {
     _isLoading = true;
     notifyListeners();
@@ -41,7 +43,7 @@ class AuthProvider with ChangeNotifier {
       await prefs.setString('userName', _userName!);
 
       _isLoading = false;
-      notifyListeners(); // Memicu AuthGate untuk pindah halaman
+      notifyListeners(); 
       return null; 
     } catch (e) {
       _isLoading = false;
@@ -51,6 +53,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // Proses Register
   Future<String?> register(String name, String email, String password, String role) async {
     _isLoading = true;
     notifyListeners();
@@ -67,7 +70,16 @@ class AuthProvider with ChangeNotifier {
       return 'Terjadi kesalahan koneksi';
     }
   }
+
+  // Proses Update Nama (Dipanggil dari Halaman Profil)
+  Future<void> updateUserData(String newName) async {
+    _userName = newName;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userName', newName);
+    notifyListeners();
+  }
   
+  // Proses Logout
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();

@@ -36,6 +36,16 @@ class ApiService {
   }
 
   // ==========================================
+  // --- FITUR USER / PROFIL ---
+  // ==========================================
+  Future<Response> updateProfile({required String name, String? password}) async {
+    return await _dio.put('/users/profile', data: {
+      'name': name,
+      if (password != null && password.isNotEmpty) 'password': password,
+    });
+  }
+
+  // ==========================================
   // --- FITUR PRODUK (PUBLIC & ADMIN) ---
   // ==========================================
   Future<Response> getProducts() async {
@@ -79,14 +89,22 @@ class ApiService {
   // --- FITUR PESANAN (CUSTOMER & ADMIN) ---
   // ==========================================
   Future<Response> createOrder({
-    required int productId,
-    required int quantity,
-    required String notes,
+    required int productId, 
+    required int quantity, 
+    required String notes, 
     required String paymentProofPath,
+    String? voucherCode, 
+    String? discountAmount
   }) async {
     FormData formData = FormData.fromMap({
-      'productId': productId.toString(), 'quantity': quantity.toString(), 'notes': notes,
+      'productId': productId.toString(), 
+      'quantity': quantity.toString(), 
+      'notes': notes,
       'paymentProof': await MultipartFile.fromFile(paymentProofPath, filename: 'bukti_pembayaran.jpg'),
+      
+      // Menggunakan null-aware elements (?) agar bebas warning di Dart versi baru
+      'voucherCode': ?voucherCode,
+      'discountAmount': ?discountAmount,
     });
     return await _dio.post('/orders', data: formData);
   }
@@ -97,5 +115,16 @@ class ApiService {
 
   Future<Response> updateOrderStatus(int id, String status) async {
     return await _dio.put('/orders/$id/status', data: {'status': status});
+  }
+
+  // ==========================================
+  // --- FITUR VOUCHER & STATISTIK ---
+  // ==========================================
+  Future<Response> checkVoucher(String code) async {
+    return await _dio.get('/vouchers/$code');
+  }
+
+  Future<Response> getAdminStats() async {
+    return await _dio.get('/stats');
   }
 }

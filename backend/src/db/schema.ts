@@ -1,42 +1,51 @@
-import { mysqlTable, varchar, text, decimal, int, timestamp, mysqlEnum } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, text, decimal, int, timestamp, mysqlEnum, boolean } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 
-// 1. Tabel Users (Admin & Customer)
 export const users = mysqlTable('users', {
   id: int('id').autoincrement().primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),
   email: varchar('email', { length: 100 }).notNull().unique(),
-  password: varchar('password', { length: 255 }).notNull(), // Akan di-hash
+  password: varchar('password', { length: 255 }).notNull(),
   role: mysqlEnum('role', ['admin', 'customer']).default('customer').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// 2. Tabel Products (Minuman)
 export const products = mysqlTable('products', {
   id: int('id').autoincrement().primaryKey(),
   name: varchar('name', { length: 150 }).notNull(),
   description: text('description'),
   price: decimal('price', { precision: 10, scale: 2 }).notNull(),
-  imageUrl: varchar('image_url', { length: 255 }), // Menyimpan URL dari Cloudinary
+  imageUrl: varchar('image_url', { length: 255 }),
   stock: int('stock').default(0).notNull(),
-  createdBy: int('created_by').references(() => users.id).notNull(), // Foreign Key ke Admin
+  createdBy: int('created_by').references(() => users.id).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// 3. Tabel Orders (Pesanan)
 export const orders = mysqlTable('orders', {
   id: int('id').autoincrement().primaryKey(),
-  userId: int('user_id').references(() => users.id).notNull(), // Foreign Key ke Customer
-  productId: int('product_id').references(() => products.id).notNull(), // Foreign Key ke Produk
+  userId: int('user_id').references(() => users.id).notNull(),
+  productId: int('product_id').references(() => products.id).notNull(),
   quantity: int('quantity').notNull(),
   totalPrice: decimal('total_price', { precision: 10, scale: 2 }).notNull(),
-  status: mysqlEnum('status', ['pending', 'processed', 'completed', 'cancelled']).default('pending').notNull(),
-  paymentProofUrl: varchar('payment_proof_url', { length: 255 }), // URL Cloudinary
+  // MENAMBAHKAN STATUS 'delivering'
+  status: mysqlEnum('status', ['pending', 'processed', 'delivering', 'completed', 'cancelled']).default('pending').notNull(),
+  paymentProofUrl: varchar('payment_proof_url', { length: 255 }),
   notes: text('notes'),
+  voucherCode: varchar('voucher_code', { length: 50 }), // Fitur Voucher
+  discountAmount: decimal('discount_amount', { precision: 10, scale: 2 }).default('0'), // Fitur Voucher
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// Definisi Relasi (Untuk memudahkan Query)
+// TABEL BARU UNTUK VOUCHER
+export const vouchers = mysqlTable('vouchers', {
+  id: int('id').autoincrement().primaryKey(),
+  code: varchar('code', { length: 50 }).notNull().unique(),
+  discountPercent: int('discount_percent').notNull(), // Contoh: 10 untuk 10%
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Relasi
 export const usersRelations = relations(users, ({ many }) => ({
   products: many(products),
   orders: many(orders),

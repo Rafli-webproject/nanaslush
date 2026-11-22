@@ -4,6 +4,8 @@ import cors from 'cors';
 import authRoutes from './routes/authRoutes';
 import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes';
+import statsRoutes from './routes/statsRoutes';
+import userRoutes from './routes/userRoutes';
 
 dotenv.config();
 
@@ -19,6 +21,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/', (req, res) => {
   res.status(200).json({ message: 'API Nana Slush Berjalan' });
