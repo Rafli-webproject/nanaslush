@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
 import '../auth/login_screen.dart';
-import 'checkout_screen.dart'; // Pastikan ini ada
-import 'order_history_screen.dart'; // Pastikan ini ada
+import 'checkout_screen.dart'; // Import halaman checkout
 
 class CustomerHome extends StatefulWidget {
   const CustomerHome({super.key});
@@ -130,7 +129,7 @@ class _CustomerHomeState extends State<CustomerHome> {
                                   height: 32,
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      // INI BAGIAN YANG MEMBUAT NAVIGASI KE CHECKOUT
+                                      // Navigasi ke halaman Checkout
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(

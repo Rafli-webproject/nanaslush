@@ -80,6 +80,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Info Produk
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -101,11 +102,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+
+              // Form Jumlah
               TextFormField(
                 controller: _quantityController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Jumlah Pesanan', prefixIcon: Icon(Icons.numbers)),
-                onChanged: (value) => setState(() {}),
+                onChanged: (value) => setState(() {}), // Update total harga otomatis
                 validator: (value) {
                   final qty = int.tryParse(value ?? '');
                   if (qty == null || qty <= 0) return 'Jumlah harus valid';
@@ -113,11 +116,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 },
               ),
               const SizedBox(height: 16),
+
+              // Form Catatan
               TextFormField(
                 controller: _notesController,
                 decoration: const InputDecoration(labelText: 'Catatan (Opsional)', prefixIcon: Icon(Icons.notes)),
               ),
               const SizedBox(height: 24),
+
+              // Total Harga
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -126,6 +133,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ],
               ),
               const Divider(height: 32),
+
+              // Upload Bukti Pembayaran
               const Text('Bukti Pembayaran', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               GestureDetector(
@@ -151,6 +160,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ),
               const SizedBox(height: 32),
+
+              // Tombol Submit
               ElevatedButton(
                 onPressed: _isLoading ? null : _submitOrder,
                 child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Konfirmasi Pesanan'),

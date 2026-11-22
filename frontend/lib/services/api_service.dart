@@ -63,4 +63,21 @@ class ApiService {
   Future<Response> updateOrderStatus(int id, String status) async {
     return await _dio.put('/orders/$id/status', data: {'status': status});
   }
+
+  // Fungsi Create Order (Checkout)
+  Future<Response> createOrder({
+    required int productId,
+    required int quantity,
+    required String notes,
+    required String paymentProofPath,
+  }) async {
+    FormData formData = FormData.fromMap({
+      'productId': productId.toString(),
+      'quantity': quantity.toString(),
+      'notes': notes,
+      'paymentProof': await MultipartFile.fromFile(paymentProofPath, filename: 'bukti_pembayaran.jpg'),
+    });
+
+    return await _dio.post('/orders', data: formData);
+  }
 }
