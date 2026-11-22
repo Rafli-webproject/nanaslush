@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
 import '../auth/login_screen.dart';
+import 'checkout_screen.dart'; // Import halaman checkout
 
 class CustomerHome extends StatefulWidget {
   const CustomerHome({super.key});
@@ -128,9 +129,12 @@ class _CustomerHomeState extends State<CustomerHome> {
                                   height: 32,
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      // Buka halaman detail / form pesanan
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Fitur Pesan segera hadir!')),
+                                      // Navigasi ke halaman Checkout
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => CheckoutScreen(product: product),
+                                        ),
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
