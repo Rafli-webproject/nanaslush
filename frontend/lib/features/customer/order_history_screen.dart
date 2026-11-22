@@ -46,6 +46,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     return DateFormat('dd MMM yyyy, HH:mm').format(date);
   }
 
+  // Warna Badge berdasarkan Status
   Color _getStatusColor(String status) {
     switch (status) {
       case 'pending': return Colors.orange;

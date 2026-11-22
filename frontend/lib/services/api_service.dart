@@ -80,4 +80,9 @@ class ApiService {
 
     return await _dio.post('/orders', data: formData);
   }
+
+  // Fungsi Get Orders (Riwayat Pesanan)
+  Future<Response> getOrders() async {
+    return await _dio.get('/orders');
+  }
 }

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
 import '../auth/login_screen.dart';
-import 'checkout_screen.dart'; // Import halaman checkout
+import 'checkout_screen.dart';
+import 'order_history_screen.dart'; // Import halaman riwayat
 
 class CustomerHome extends StatefulWidget {
   const CustomerHome({super.key});
@@ -50,6 +51,14 @@ class _CustomerHomeState extends State<CustomerHome> {
       appBar: AppBar(
         title: const Text('Menu Nana Slush'),
         actions: [
+          // Tombol ke Riwayat Pesanan
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderHistoryScreen()));
+            },
+          ),
+          // Tombol Logout
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
@@ -129,7 +138,6 @@ class _CustomerHomeState extends State<CustomerHome> {
                                   height: 32,
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      // Navigasi ke halaman Checkout
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
