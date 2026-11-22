@@ -21,7 +21,10 @@ class ApiService {
     ));
   }
 
-  // Fungsi Register
+  // ==========================================
+  // --- FITUR AUTHENTICATION ---
+  // ==========================================
+  
   Future<Response> register(String name, String email, String password, String role) async {
     return await _dio.post('/auth/register', data: {
       'name': name,
@@ -31,7 +34,6 @@ class ApiService {
     });
   }
 
-  // Fungsi Login
   Future<Response> login(String email, String password) async {
     return await _dio.post('/auth/login', data: {
       'email': email,
@@ -39,8 +41,81 @@ class ApiService {
     });
   }
 
-  // Fungsi Get All Products (Ambil daftar produk)
+  // ==========================================
+  // --- FITUR PRODUK (PUBLIC & ADMIN) ---
+  // ==========================================
+
+  // Ambil daftar produk (Public)
   Future<Response> getProducts() async {
     return await _dio.get('/products');
+  }
+
+  // Tambah Produk (Admin)
+  Future<Response> createProduct({
+    required String name,
+    required String description,
+    required String price,
+    required String stock,
+    required String imagePath,
+  }) async {
+    FormData formData = FormData.fromMap({
+      'name': name,
+      'description': description,
+      'price': price,
+      'stock': stock,
+      'image': await MultipartFile.fromFile(imagePath, filename: 'product.jpg'),
+    });
+    return await _dio.post('/products', data: formData);
+  }
+
+  // Edit Produk (Admin)
+  Future<Response> updateProduct({
+    required int id,
+    required String name,
+    required String description,
+    required String price,
+    required String stock,
+    String? imagePath, // Opsional, jika admin ingin ganti gambar
+  }) async {
+    FormData formData = FormData.fromMap({
+      'name': name,
+      'description': description,
+      'price': price,
+      'stock': stock,
+      if (imagePath != null) 
+        'image': await MultipartFile.fromFile(imagePath, filename: 'product.jpg'),
+    });
+    return await _dio.put('/products/$id', data: formData);
+  }
+
+  // Hapus Produk (Admin)
+  Future<Response> deleteProduct(int id) async {
+    return await _dio.delete('/products/$id');
+  }
+
+  // ==========================================
+  // --- FITUR PESANAN (CUSTOMER & ADMIN) ---
+  // ==========================================
+
+  // Buat Pesanan (Customer)
+  Future<Response> createOrder({
+    required int productId,
+    required int quantity,
+    required String notes,
+    required String paymentProofPath,
+  }) async {
+    FormData formData = FormData.fromMap({
+      'productId': productId.toString(),
+      'quantity': quantity.toString(),
+      'notes': notes,
+      'paymentProof': await MultipartFile.fromFile(paymentProofPath, filename: 'bukti_pembayaran.jpg'),
+    });
+
+    return await _dio.post('/orders', data: formData);
+  }
+
+  // Lihat Daftar Pesanan (Admin melihat semua, Customer melihat miliknya)
+  Future<Response> getOrders() async {
+    return await _dio.get('/orders');
   }
 }

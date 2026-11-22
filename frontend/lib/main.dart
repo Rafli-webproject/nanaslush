@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/auth_provider.dart';
 import 'features/auth/login_screen.dart';
-import 'features/customer/customer_home.dart'; // Import CustomerHome
+import 'features/customer/customer_home.dart';
+import 'features/admin/admin_dashboard.dart'; // Import Dashboard Admin
 
 void main() {
   runApp(
@@ -38,6 +39,7 @@ class AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
 
+    // Tampilkan loading saat memuat token dari local storage
     if (authProvider.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -45,10 +47,9 @@ class AuthGate extends StatelessWidget {
     // Jika sudah login, arahkan ke halaman sesuai Role
     if (authProvider.isAuthenticated) {
       if (authProvider.role == 'customer') {
-        return const CustomerHome(); // Arahkan ke Customer Home
+        return const CustomerHome(); 
       } else {
-        // Nanti kita buat halaman AdminDashboard
-        return const Scaffold(body: Center(child: Text('Halaman Admin Belum Dibuat')));
+        return const AdminDashboard(); // Arahkan Admin ke Dashboard
       }
     }
 
