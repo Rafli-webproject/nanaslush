@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/auth_provider.dart';
+import 'features/auth/login_screen.dart';
 
 void main() {
-  runApp(const NanaSlushApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()..loadToken()),
+      ],
+      child: const NanaSlushApp(),
+    ),
+  );
 }
 
 class NanaSlushApp extends StatelessWidget {
@@ -14,15 +24,7 @@ class NanaSlushApp extends StatelessWidget {
       title: 'Nana Slush',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const Scaffold(
-        body: Center(
-          child: Text(
-            'Nana Slush\nUI Ready',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
+      home: const LoginScreen(), // Jadikan Login sebagai halaman awal
     );
   }
 }
