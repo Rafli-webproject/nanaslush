@@ -38,4 +38,9 @@ class ApiService {
       'password': password,
     });
   }
+
+  // Fungsi Get All Products (Ambil daftar produk)
+  Future<Response> getProducts() async {
+    return await _dio.get('/products');
+  }
 }
