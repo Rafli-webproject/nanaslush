@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
-import { orders, products } from '../db/schema';
+import { orders, products, users } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { uploadToCloudinary } from '../utils/uploadImage';
@@ -16,31 +16,27 @@ const statusSchema = z.object({
   status: z.enum(['pending', 'processed', 'completed', 'cancelled']),
 });
 
-// 1. CREATE ORDER (Customer)
 export const createOrder = async (req: Request, res: Response): Promise<void> => {
   try {
     const validatedData = orderSchema.parse(req.body);
     const file = req.file;
     
-    // Cek produk apakah ada
     const product = await db.select().from(products).where(eq(products.id, parseInt(validatedData.productId)));
     if (product.length === 0) {
       res.status(404).json({ success: false, message: 'Produk tidak ditemukan' });
       return;
     }
 
-    // Hitung total harga
     const quantity = parseInt(validatedData.quantity);
     const totalPrice = (parseFloat(product[0].price) * quantity).toString();
 
-    // Upload bukti pembayaran jika ada
     let paymentProofUrl = null;
     if (file) {
       paymentProofUrl = await uploadToCloudinary(file.buffer);
     }
 
     const newOrder = await db.insert(orders).values({
-      userId: req.user!.id, // Didapat dari token JWT
+      userId: req.user!.id,
       productId: parseInt(validatedData.productId),
       quantity: quantity,
       totalPrice: totalPrice,
@@ -58,22 +54,37 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-// 2. GET ALL ORDERS (Admin melihat semua, Customer hanya melihat miliknya)
+// GET ORDERS DENGAN JOIN TABLE (Untuk Admin)
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
   try {
-    let orderList;
     if (req.user!.role === 'admin') {
-      orderList = await db.select().from(orders);
+      // Admin melihat semua pesanan beserta nama customer dan nama produk
+      const orderList = await db.select({
+        id: orders.id,
+        quantity: orders.quantity,
+        totalPrice: orders.totalPrice,
+        status: orders.status,
+        notes: orders.notes,
+        paymentProofUrl: orders.paymentProofUrl,
+        createdAt: orders.createdAt,
+        customerName: users.name,
+        productName: products.name,
+      })
+      .from(orders)
+      .leftJoin(users, eq(orders.userId, users.id))
+      .leftJoin(products, eq(orders.productId, products.id));
+
+      res.status(200).json({ success: true, message: 'Daftar pesanan berhasil diambil', data: orderList });
     } else {
-      orderList = await db.select().from(orders).where(eq(orders.userId, req.user!.id));
+      // Customer hanya melihat miliknya
+      const orderList = await db.select().from(orders).where(eq(orders.userId, req.user!.id));
+      res.status(200).json({ success: true, message: 'Daftar pesanan berhasil diambil', data: orderList });
     }
-    res.status(200).json({ success: true, message: 'Daftar pesanan berhasil diambil', data: orderList });
   } catch (error: any) {
     res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server', error: error.message });
   }
 };
 
-// 3. UPDATE STATUS (Hanya Admin)
 export const updateOrderStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = parseInt(req.params.id as string);
