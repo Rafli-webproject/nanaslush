@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/auth_provider.dart';
 import 'features/auth/login_screen.dart';
-import 'features/customer/customer_home.dart'; // Import CustomerHome
+import 'features/customer/customer_home.dart';
+import 'features/admin/admin_dashboard.dart'; // Pastikan AdminDashboard di-import
 
 void main() {
   runApp(
@@ -30,7 +31,6 @@ class NanaSlushApp extends StatelessWidget {
   }
 }
 
-// Class untuk mengecek apakah user sudah login atau belum
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -42,17 +42,14 @@ class AuthGate extends StatelessWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    // Jika sudah login, arahkan ke halaman sesuai Role
     if (authProvider.isAuthenticated) {
       if (authProvider.role == 'customer') {
-        return const CustomerHome(); // Arahkan ke Customer Home
+        return const CustomerHome(); 
       } else {
-        // Nanti kita buat halaman AdminDashboard
-        return const Scaffold(body: Center(child: Text('Halaman Admin Belum Dibuat')));
+        return const AdminDashboard(); // Ini yang tadi salah/terlewat
       }
     }
 
-    // Jika belum login, arahkan ke LoginScreen
     return const LoginScreen();
   }
 }
