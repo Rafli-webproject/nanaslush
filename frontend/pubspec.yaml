@@ -1,0 +1,33 @@
+name: frontend
+description: "Aplikasi Mobile Nana Slush"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  
+  # Library untuk HTTP Request ke API
+  dio: ^5.4.0
+  # State Management
+  provider: ^6.1.1
+  # Penyimpanan Token JWT
+  shared_preferences: ^2.2.2
+  # Mengambil gambar dari galeri/kamera
+  image_picker: ^1.0.7
+  # Font kustom agar UI lebih premium
+  google_fonts: ^6.1.0
+  # Format mata uang Rupiah
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
