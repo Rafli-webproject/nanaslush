@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
 import '../auth/login_screen.dart';
+import 'checkout_screen.dart'; // Pastikan ini ada
+import 'order_history_screen.dart'; // Pastikan ini ada
 
 class CustomerHome extends StatefulWidget {
   const CustomerHome({super.key});
@@ -37,7 +39,6 @@ class _CustomerHomeState extends State<CustomerHome> {
     }
   }
 
-  // Format Rupiah
   String _formatPrice(String price) {
     final double parsedPrice = double.parse(price);
     final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
@@ -50,6 +51,12 @@ class _CustomerHomeState extends State<CustomerHome> {
       appBar: AppBar(
         title: const Text('Menu Nana Slush'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderHistoryScreen()));
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -67,18 +74,15 @@ class _CustomerHomeState extends State<CustomerHome> {
                     children: [
                       Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
                       const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _fetchProducts,
-                        child: const Text('Coba Lagi'),
-                      )
+                      ElevatedButton(onPressed: _fetchProducts, child: const Text('Coba Lagi'))
                     ],
                   ),
                 )
               : GridView.builder(
                   padding: const EdgeInsets.all(16),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // 2 Kolom
-                    childAspectRatio: 0.75, // Rasio tinggi dan lebar card
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.75,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),
@@ -90,7 +94,6 @@ class _CustomerHomeState extends State<CustomerHome> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Gambar Produk
                           Expanded(
                             child: product['imageUrl'] != null
                                 ? Image.network(
@@ -102,7 +105,6 @@ class _CustomerHomeState extends State<CustomerHome> {
                                   )
                                 : const Center(child: Icon(Icons.local_drink, size: 50, color: Colors.grey)),
                           ),
-                          // Info Produk
                           Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Column(
@@ -128,9 +130,12 @@ class _CustomerHomeState extends State<CustomerHome> {
                                   height: 32,
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      // Buka halaman detail / form pesanan
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Fitur Pesan segera hadir!')),
+                                      // INI BAGIAN YANG MEMBUAT NAVIGASI KE CHECKOUT
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => CheckoutScreen(product: product),
+                                        ),
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
