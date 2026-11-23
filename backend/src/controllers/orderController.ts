@@ -12,6 +12,11 @@ const orderSchema = z.object({
   notes: z.string().optional(),
   voucherCode: z.string().optional(),
   discountAmount: z.string().optional(),
+  // Data Baru
+  deliveryMethod: z.enum(['pickup', 'delivery']),
+  paymentMethod: z.enum(['transfer', 'cash']),
+  address: z.string().optional(),
+  customerPhone: z.string().min(10, 'Nomor HP minimal 10 digit'),
 });
 
 const statusSchema = z.object({
@@ -37,10 +42,17 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
+    // Jika delivery, alamat wajib ada
+    if (validatedData.deliveryMethod === 'delivery' && (!validatedData.address || validatedData.address.trim() === '')) {
+      res.status(400).json({ success: false, message: 'Alamat wajib diisi untuk pengiriman' });
+      return;
+    }
+
     const totalPrice = (parseFloat(product[0].price) * quantity).toString();
 
     let paymentProofUrl = null;
-    if (file) {
+    // Hanya upload bukti jika metode pembayaran Transfer
+    if (file && validatedData.paymentMethod === 'transfer') {
       paymentProofUrl = await uploadToCloudinary(file.buffer);
     }
 
@@ -53,9 +65,13 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
       paymentProofUrl: paymentProofUrl,
       voucherCode: validatedData.voucherCode || null,
       discountAmount: validatedData.discountAmount || '0',
+      
+      deliveryMethod: validatedData.deliveryMethod,
+      paymentMethod: validatedData.paymentMethod,
+      address: validatedData.address || null,
+      customerPhone: validatedData.customerPhone,
     });
 
-    // Potong Stok Otomatis
     await db.update(products)
       .set({ stock: currentStock - quantity })
       .where(eq(products.id, parseInt(validatedData.productId)));
@@ -70,6 +86,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+// GET ORDERS DENGAN JOIN TABLE (Diperbarui dengan data baru)
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
   try {
     if (req.user!.role === 'admin') {
@@ -83,6 +100,11 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
         createdAt: orders.createdAt,
         customerName: users.name,
         productName: products.name,
+        // Tambahan Info
+        deliveryMethod: orders.deliveryMethod,
+        paymentMethod: orders.paymentMethod,
+        address: orders.address,
+        customerPhone: orders.customerPhone,
       })
       .from(orders)
       .leftJoin(users, eq(orders.userId, users.id))

@@ -8,6 +8,13 @@
       "when": 1795348856104,
       "tag": "0000_familiar_major_mapleleaf",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1795392910825,
+      "tag": "0001_misty_guardian",
+      "breakpoints": true
     }
   ]
 }

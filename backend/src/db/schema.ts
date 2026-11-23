@@ -27,12 +27,18 @@ export const orders = mysqlTable('orders', {
   productId: int('product_id').references(() => products.id).notNull(),
   quantity: int('quantity').notNull(),
   totalPrice: decimal('total_price', { precision: 10, scale: 2 }).notNull(),
-  // MENAMBAHKAN STATUS 'delivering'
   status: mysqlEnum('status', ['pending', 'processed', 'delivering', 'completed', 'cancelled']).default('pending').notNull(),
-  paymentProofUrl: varchar('payment_proof_url', { length: 255 }),
+  
+  // --- KOLOM BARU UNTUK PENGIRIMAN & PEMBAYARAN ---
+  deliveryMethod: mysqlEnum('delivery_method', ['pickup', 'delivery']).default('pickup').notNull(),
+  paymentMethod: mysqlEnum('payment_method', ['transfer', 'cash']).default('transfer').notNull(),
+  address: text('address'), // Boleh null jika pickup
+  customerPhone: varchar('customer_phone', { length: 20 }).notNull(), // Nomor HP pelanggan
+  
+  paymentProofUrl: varchar('payment_proof_url', { length: 255 }), // Null jika bayar cash
   notes: text('notes'),
-  voucherCode: varchar('voucher_code', { length: 50 }), // Fitur Voucher
-  discountAmount: decimal('discount_amount', { precision: 10, scale: 2 }).default('0'), // Fitur Voucher
+  voucherCode: varchar('voucher_code', { length: 50 }),
+  discountAmount: decimal('discount_amount', { precision: 10, scale: 2 }).default('0'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

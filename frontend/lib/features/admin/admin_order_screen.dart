@@ -52,6 +52,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     switch (status) {
       case 'pending': return Colors.orange;
       case 'processed': return Colors.blue;
+      case 'delivering': return Colors.purple; // Warna Baru
       case 'completed': return Colors.green;
       case 'cancelled': return Colors.red;
       default: return Colors.grey;
@@ -69,6 +70,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     }
   }
 
+  // --- FITUR DETAIL PESANAN ADMIN ---
   void _showOrderDetail(Map<String, dynamic> order) {
     showModalBottomSheet(
       context: context,
@@ -76,37 +78,68 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
         return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Pesanan #${order['id']}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text('Customer: ${order['customerName']}'),
-              Text('Produk: ${order['productName']} (Qty: ${order['quantity']})'),
-              Text('Total: ${_formatPrice(order['totalPrice'])}'),
-              if (order['notes'] != null) Text('Catatan: ${order['notes']}'),
-              const Divider(height: 24),
-              const Text('Bukti Pembayaran:', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              if (order['paymentProofUrl'] != null)
-                ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(order['paymentProofUrl'], height: 200, fit: BoxFit.contain, errorBuilder: (c, e, s) => const Text('Gagal muat gambar'))),
-              const SizedBox(height: 24),
-              const Text('Ubah Status:', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: ['pending', 'processed', 'completed', 'cancelled'].map((status) {
-                  return ChoiceChip(
-                    label: Text(status.toUpperCase()),
-                    selected: order['status'] == status,
-                    onSelected: (selected) { if (selected) _updateStatus(order['id'], status); },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 24),
-            ],
+          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, top: 24, left: 24, right: 24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Pesanan #${order['id']}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                Text('Customer: ${order['customerName']}'),
+                Text('No HP: ${order['customerPhone']}'),
+                Text('Produk: ${order['productName']} (Qty: ${order['quantity']})'),
+                Text('Total: ${_formatPrice(order['totalPrice'])}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                
+                const Divider(height: 24),
+                
+                // Info Pengiriman
+                Text('Metode: ${order['deliveryMethod'] == 'delivery' ? 'Diantar ke Alamat' : 'Ambil di Tempat'}'),
+                if (order['address'] != null) 
+                  Text('Alamat: ${order['address']}', style: const TextStyle(fontStyle: FontStyle.italic)),
+                
+                // Info Pembayaran
+                Text('Pembayaran: ${order['paymentMethod'] == 'transfer' ? 'Transfer Bank' : 'CASH / COD'}', 
+                  style: TextStyle(fontWeight: FontWeight.bold, color: order['paymentMethod'] == 'cash' ? Colors.orange : Colors.black)),
+                
+                const Divider(height: 24),
+                
+                // Kontak Customer
+                ElevatedButton.icon(
+                  onPressed: () {
+                    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('Menghubungi WA Customer: ${order['customerPhone']}')));
+                  },
+                  icon: const Icon(Icons.phone),
+                  label: const Text('Hubungi Customer via WA'),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade50, foregroundColor: Colors.green.shade800),
+                ),
+                
+                const Divider(height: 24),
+                
+                // Bukti Pembayaran
+                const Text('Bukti Pembayaran:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                if (order['paymentProofUrl'] != null)
+                  ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(order['paymentProofUrl'], height: 200, fit: BoxFit.contain, errorBuilder: (c, e, s) => const Text('Gagal muat gambar')))
+                else
+                  const Text('Tidak ada bukti transfer (Pembayaran Cash/COD).', style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey)),
+                
+                const SizedBox(height: 24),
+                const Text('Ubah Status:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: ['pending', 'processed', 'delivering', 'completed', 'cancelled'].map((status) {
+                    return ChoiceChip(
+                      label: Text(status.toUpperCase()),
+                      selected: order['status'] == status,
+                      onSelected: (selected) { if (selected) _updateStatus(order['id'], status); },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         );
       },
@@ -123,7 +156,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
-              children: ['all', 'pending', 'processed', 'completed', 'cancelled'].map((filter) {
+              children: ['all', 'pending', 'processed', 'delivering', 'completed', 'cancelled'].map((filter) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: ChoiceChip(
@@ -153,7 +186,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                             child: ListTile(
                               onTap: () => _showOrderDetail(order),
                               title: Text('${order['customerName']} - ${order['productName']}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                              subtitle: Text('Total: ${_formatPrice(order['totalPrice'])}'),
+                              subtitle: Text('${order['paymentMethod'] == 'cash' ? 'COD' : 'Transfer'} | Total: ${_formatPrice(order['totalPrice'])}'),
                               trailing: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: statusColor)),

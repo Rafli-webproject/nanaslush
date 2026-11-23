@@ -93,6 +93,10 @@ class ApiService {
     required int quantity, 
     required String notes, 
     required String paymentProofPath,
+    required String deliveryMethod, 
+    required String paymentMethod, 
+    required String customerPhone,
+    String? address, 
     String? voucherCode, 
     String? discountAmount
   }) async {
@@ -100,10 +104,15 @@ class ApiService {
       'productId': productId.toString(), 
       'quantity': quantity.toString(), 
       'notes': notes,
-      'paymentProof': await MultipartFile.fromFile(paymentProofPath, filename: 'bukti_pembayaran.jpg'),
+      'deliveryMethod': deliveryMethod,
+      'paymentMethod': paymentMethod,
+      'customerPhone': customerPhone,
       
-      // Menggunakan null-aware elements (?) agar bebas warning di Dart versi baru
-      'voucherCode': ?voucherCode,
+      if (address != null && address.isNotEmpty) 'address': address,
+      if (paymentProofPath.isNotEmpty) 'paymentProof': await MultipartFile.fromFile(paymentProofPath, filename: 'bukti.jpg'),
+      
+      // Menggunakan null-aware marker (?) untuk menghindari warning
+      'voucherCode': ?voucherCode, 
       'discountAmount': ?discountAmount,
     });
     return await _dio.post('/orders', data: formData);
